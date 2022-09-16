@@ -5,11 +5,9 @@ A Bayesian average is a method of estimating the mean of a population using outs
 
 Product reviews and ratings play an important role in consumer decision making. Online shoppers look for products with the highest ratings. They often read reviews that give details behind the ratings. In the search and discovery context, businesses consider product reviews to be as relevant as product descriptions. Both are relevant for matching users’ queries.
 
-Algolia’s custom ranking feature enables you to use business signals such as the number of sales and profit margins. You can also use ratings to influence the ranking. For example, when a user types a broad query such as “headphones”, a ratings-based custom ranking ensures that the highest-rated earbuds show up first.
+You can use ratings to influence the ranking. For example, when a user types a broad query such as “headphones”, a ratings-based custom ranking ensures that the highest-rated earbuds show up first.
 
 Though this tutorial focuses on star ratings, this solution can work with any product scoring system. For example, you could compute the Bayesian average for the number of up and down votes, or scores based on the number of sells or views.
-
-The first sections in this guide explain the challenges with star ratings and how the Bayesian average has become the preferred method for ranking by star ratings. If you like, you can jump directly into the coding guide.
 
 
 ## The difficulties with calculating a reliable rating
@@ -30,14 +28,14 @@ As already suggested, ignoring the quantity of ratings doesn’t help distinguis
 
 The following image shows three items ranked by different averages. The left side uses the arithmetic average for ranking. The right side uses the Bayesian average.
 
-![image](https://user-images.githubusercontent.com/5102591/188502347-9efe2536-451a-45a0-a8df-3c65d1813c4d.png)
+![image](./images/items.png)
 
 
 Both sides display the arithmetic average in parenthesis just right of the stars. They also display the average used for ranking as `avg_star_rating` and `bayes_avg` respectively, under each item.
 
 By putting Item A at the top, the left side’s ranking is both misleading and unsatisfying. The ranking on the right, based on the Bayesian average, reflects a better balance of rating and quantity of ratings. This example shows how the Bayesian average lowered item A’s average to 4.3 because it measured A’s 10 ratings against B and C’s much larger numbers of ratings. As described later, the Bayesian average left Items B and C unchanged because the Bayesian average affects items with low rating counts much more then those that have more ratings.
 
-In sum, by relativizing ratings in this way, the Bayesian average creates a more reliable comparison between products. It ensures that products with lower numbers of ratings have less weight in the ranking. What follows is a description of the Bayesian average and how to code it.
+In sum, by relativizing ratings in this way, the Bayesian average creates a more reliable comparison between products. It ensures that products with lower numbers of ratings have less weight in the ranking.
 
 
 
@@ -49,6 +47,95 @@ This confidence number derives from the catalog’s distribution of rating count
 
 - For an item with a fewer than average quantity of ratings, the Bayesian average lowers its artificially high rating by weighing it down (slightly) to the lower catalog average.
 - For an item with a lot of ratings (that is, more than the threshold), the Bayesian average doesn’t change its rating average by a significant amount.
+
+
+## Installation
+
+```bash
+composer require assisted-mindfulness/bayesian-average
+```
+
+
+## Usage
+
+Create an instance of the AssistedMindfulness\BayesianAverage\BayesianAverage class.
+```php
+//$allRatingsCount - the count of quantity of ratings, $sum - the sum of all ratings
+$bayes = new BayesianAverage($allRatingsCount, $sum);
+```
+Then you need to set the confidence average.
+
+```php
+//$allRatingsCount - the count of quantity of ratings, $sum - the sum of all ratings
+$bayes = new BayesianAverage($allRatingsCount, $sum);
+```
+
+Then set the confidence mean using one of the following methods:
+- `setConfidenceNumber(int|float $confidenceNumber)`: will set the passed argument to a confidence number.
+- `setConfidenceNumberForEvenOrOdd(int $count, callable $even, callable $odd):`: - In case of an even `$count` (number of elements), will set the result of executing `$even` as a confidence number; if `$count` is odd, the confidence mean will be set to the result of running `$odd`.
+
+
+
+After that, you can get the Bayesian average for the element.
+```php
+//$average - тhe average rating for this item.
+//$countRatings - тhe count ratings for this item.
+$bayes->getAverage($average, $countRatings)
+```
+
+
+
+### Example
+
+```php
+ $data = [
+            [
+                'name'          => "Item1",
+                "ratings"       => [5,4,3,4,3,2,4,3],
+                'ratings_count' => 8,
+            ],
+            [
+                'name'          => "Item2",
+                "ratings"       => [4,5,5,5,5,5,5,5,4],
+                'ratings_count' => 9,
+            ],
+            [
+                'name'          => "Item3",
+                "ratings"       => [5],
+                'ratings_count' => 1,
+            ],
+        ];
+$allRatingsCount = collect($data)->sum('ratings_count');
+$sum = collect($data)->map(fn ($item) => array_sum($item['ratings']))->sum();
+
+$bayes = new BayesianAverage($allRatingsCount, $sum);
+
+         $bayes->setConfidenceNumberForEvenOrOdd(count($data), function ($position) use ($data) {
+                    $item = collect($data)->sortBy('ratings_count')->values()->get($position / 2);
+        
+                    return $item['ratings_count'];
+                }, function ($position) use ($data) {
+                    $item1 = collect($data)->sortBy('ratings_count')->values()->get(($position + 1) / 2);
+                    $item2 = collect($data)->sortBy('ratings_count')->values()->get(($position - 1) / 2);
+        
+                    return ($item1['ratings_count'] + $item2['ratings_count']) / 2;
+                });
+
+         collect($data)->each(function ($item) use ($bayes, $sum, $allRatingsCount) {
+            $average = array_sum($item['ratings']) / count($item['ratings']);
+            $bayes_avg = round($bayes->getAverage($average, count($item['ratings']),2)
+            printf('Average = %s, Bayesian  average = %s',$average,$bayes_avg);
+        });
+
+
+
+/*
+ *Average = 3.5, Bayesian  average = 3.5802469135802 
+ *Average = 4.7777777777778, Bayesian  average = 4.7222222222222 
+ *Average = 5, Bayesian  average = 4.6111111111111 
+ */
+```
+
 
 ## License
 
