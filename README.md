@@ -65,6 +65,8 @@ $bayes->getAverage($average, $countRatings)
 
 ### Example
 
+....
+
 ```php
 $data = collect([
     [
@@ -92,6 +94,14 @@ $bayes = new BayesianAverage($allRatingsCount, $sum);
 $bayes->setConfidenceNumber(1);
 
 
+$average = array_sum($data[0]['ratings']) / count($data[0]['ratings']); // 3.5
+$bayes_avg = $bayes->getAverage($average, count($item['ratings'])); // 3.5802469135802 
+```
+
+...
+
+```php
+$bayes = new BayesianAverage($allRatingsCount, $sum);
 
 $bayes->setConfidenceNumberForEvenOrOdd($data->count(), function ($position) use ($data) {
     $item = $data->sortBy('ratings_count')->values()->get($position / 2);
@@ -106,11 +116,9 @@ $bayes->setConfidenceNumberForEvenOrOdd($data->count(), function ($position) use
 
 $data->each(function ($item) use ($bayes, $sum, $allRatingsCount) {
     $average = array_sum($item['ratings']) / count($item['ratings']);
-    $bayes_avg = round($bayes->getAverage($average, count($item['ratings']), 2));
+    $bayes_avg = $bayes->getAverage($average, count($item['ratings']));
     printf('Average = %s, Bayesian  average = %s', $average, $bayes_avg);
 });
-
-
 
 /*
  *Average = 3.5, Bayesian  average = 3.5802469135802 
