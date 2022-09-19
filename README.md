@@ -1,10 +1,7 @@
 # Bayesian Average
 
-A Bayesian average is a method of estimating the mean of a population using outside information, especially a pre-existing belief, which is factored into the calculation.
+A Bayesian average is a method of estimating the mean of a population using outside information, especially a pre-existing belief, which is factored into the calculation. To understand if the Bayesian average is right for you, let's look at two ways to rank star ratings:
 
-### Difference from the average arithmetic
-
-Consider two ways to rank star ratings:
 
 - Use an arithmetic average that adds together all ratings and divides them by the total quantity of ratings. If there are 100 1-star ratings and 10 5-star ratings, the calculation is ((100x1) + (10x5))/ (100+10) = 1.36.
 - Use a [Bayesian average](https://en.wikipedia.org/wiki/Bayesian_average) that adjusts a product’s average rating by how much it varies from the catalog average. This favors products with a higher quantity of ratings.
