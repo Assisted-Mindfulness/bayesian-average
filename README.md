@@ -60,23 +60,15 @@ $bayes
 $bayes->getAverage($itemLargeRatingAverage, $itemLargeRatingCount); // ~4.3
 ```
 
-Then set the confidence mean using one of the following methods:
+The confidence number is set by one of the following methods:
 - `setConfidenceNumber(int|float $confidenceNumber)`: will set the passed argument to a confidence number.
 - `setConfidenceNumberForEvenOrOdd(int $count, callable $even, callable $odd):`: - In case of an even `$count` (number of elements), will set the result of executing `$even` as a confidence number; if `$count` is odd, the confidence mean will be set to the result of running `$odd`.
 
 
-
-After that, you can get the Bayesian average for the element.
-```php
-//$average - тhe average rating for this item.
-//$countRatings - тhe count ratings for this item.
-$bayes->getAverage($average, $countRatings)
-```
-
-
 ### Example
 
-More text here ...
+
+Computing the Bayesian mean using an array as an example.
 
 ```php
 $data = collect([
@@ -105,10 +97,10 @@ $bayes = new BayesianAverage($allRatingsCount, $sum);
 $bayes->setConfidenceNumber(1);
 
 $average = array_sum($data[0]['ratings']) / count($data[0]['ratings']); // 3.5
-$bayes_avg = $bayes->getAverage($average, count($item['ratings'])); // 3.5802469135802 
+$bayes_avg = $bayes->getAverage($average, count($data[0]['ratings'])); // 3.5802469135802 
 ```
 
-More text here ...
+Consider using the `setConfidenceNumberForEvenOrOdd` method. Let's set the lower [quartile](https://en.wikipedia.org/wiki/Quartile) as the confidence number.
 
 ```php
 $bayes = new BayesianAverage($allRatingsCount, $sum);
