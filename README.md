@@ -9,7 +9,7 @@ As already suggested, ignoring the quantity of ratings doesn’t help distinguis
 
 The following image shows three items ranked by different averages. The left side uses the arithmetic average for ranking. The right side uses the Bayesian average.
 
-![image](.github/images/items.png)
+![image](.github/images/example.png)
 
 
 Both sides display the arithmetic average in parenthesis just right of the stars. They also display the average used for ranking as `avg_star_rating` and `bayes_avg` respectively, under each item.
@@ -88,6 +88,10 @@ $allRatingsCount = $data->sum('ratings_count');
 $sum = $data->sum(fn($item) => array_sum($item['ratings']));
 
 $bayes = new BayesianAverage($allRatingsCount, $sum);
+
+$bayes->setConfidenceNumber(1);
+
+
 
 $bayes->setConfidenceNumberForEvenOrOdd($data->count(), function ($position) use ($data) {
     $item = $data->sortBy('ratings_count')->values()->get($position / 2);
