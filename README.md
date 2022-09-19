@@ -44,8 +44,20 @@ composer require assisted-mindfulness/bayesian-average
 Create an instance of the `AssistedMindfulness\BayesianAverage\BayesianAverage` class.
 
 ```php
-//$allRatingsCount - the count of quantity of ratings, $sum - the sum of all ratings
-$bayes = new BayesianAverage($allRatingsCount, $sum);
+// Item with a large number of ratings
+$itemLargeRating = collect(range(0, 500))->transform(fn () => random_int(4, 5));
+$itemLargeRatingAverage = $itemLargeRating->avg();
+$itemLargeRatingCount = $itemLargeRating->count();
+
+$c = 100; // Confidence number
+$m = 3.5; // Catalog average
+
+$bayes = new BayesianAverage();
+$bayes
+    ->setConfidenceNumber($c)
+    ->setAverageRatingOfAllElements($m);
+
+$bayes->getAverage($itemLargeRatingAverage, $itemLargeRatingCount); // ~4.3
 ```
 
 Then set the confidence mean using one of the following methods:
@@ -62,7 +74,6 @@ $bayes->getAverage($average, $countRatings)
 ```
 
 
-
 ### Example
 
 More text here ...
@@ -70,17 +81,17 @@ More text here ...
 ```php
 $data = collect([
     [
-        'name'          => "Item1",
+        'name'          => "Item A",
         "ratings"       => [5, 4, 3, 4, 3, 2, 4, 3],
         'ratings_count' => 8,
     ],
     [
-        'name'          => "Item2",
+        'name'          => "Item B",
         "ratings"       => [4, 5, 5, 5, 5, 5, 5, 5, 4],
         'ratings_count' => 9,
     ],
     [
-        'name'          => "Item3",
+        'name'          => "Item C",
         "ratings"       => [5],
         'ratings_count' => 1,
     ],
@@ -92,7 +103,6 @@ $sum = $data->sum(fn($item) => array_sum($item['ratings']));
 $bayes = new BayesianAverage($allRatingsCount, $sum);
 
 $bayes->setConfidenceNumber(1);
-
 
 $average = array_sum($data[0]['ratings']) / count($data[0]['ratings']); // 3.5
 $bayes_avg = $bayes->getAverage($average, count($item['ratings'])); // 3.5802469135802 
