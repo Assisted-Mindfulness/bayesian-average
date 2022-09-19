@@ -32,7 +32,7 @@ This confidence number derives from the catalog’s distribution of rating count
 
 ## Installation
 
-You may install Bayesian Average into your project using the Composer package manager:
+You can install the Bayesian average into your project using the [Composer](https://getcomposer.org/) package manager:
 
 ```bash
 composer require assisted-mindfulness/bayesian-average
@@ -66,9 +66,6 @@ $bayes->getAverage($average, $countRatings)
 ### Example
 
 ```php
-<?php
-
-
 $data = collect([
     [
         'name'          => "Item1",
