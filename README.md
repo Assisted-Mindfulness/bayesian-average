@@ -2,22 +2,7 @@
 
 A Bayesian average is a method of estimating the mean of a population using outside information, especially a pre-existing belief, which is factored into the calculation.
 
-
-Product reviews and ratings play an important role in consumer decision-making. Online shoppers look for products with the highest ratings. They often read reviews that give details behind the ratings. In the search and discovery context, businesses consider product reviews to be as relevant as product descriptions. Both are relevant for matching users’ queries.
-
-You can use ratings to influence the ranking. For example, when a user types a broad query such as “headphones”, a ratings-based custom ranking ensures that the highest-rated earbuds show up first.
-
-Though this tutorial focuses on star ratings, this solution can work with any product scoring system. For example, you could compute the Bayesian average for the number of up and down votes, or scores based on the number of sales or views.
-
-
-## The difficulties with calculating a reliable rating
-
-Creating a meaningful ranking strategy based on ratings can be challenging. Is only one rating enough? Or do you need a certain quantity of ratings for the ratings to be reliable? Is a product that receives many mixed ratings, with a range between 1 and 5 (in a 5-star rating system), better than a product with a smaller number of primarily positive ratings? A product that receives only 5 stars is a good choice, but is it better than a popular item with hundreds of 4 stars?
-
-A good example is the query “lion” on a movie streaming site. Should the movie “The Lion King” rank above a higher rated but lesser known film like “The Lion in Winter”? Suppose that “The Lion King” has an average of 4.5 stars but “The Lion in Winter” has a higher average of 4.8. If the 4.5 average rating comes from 10,000 ratings and the 4.8 average from 100 ratings, which movie should show up first? The challenge with any rating system—whether for handbags, electronics, or movies—is that the quantity of ratings is as important as the rating itself. Intuitively, the more ratings received, the more confidence you can have in the rating. But again, how many ratings do you need to have confidence that the rating is meaningful?
-
-
-### Comparing different ratings rankings
+### Difference from the average arithmetic
 
 Consider two ways to rank star ratings:
 
