@@ -7,7 +7,6 @@ use PHPUnit\Framework\TestCase;
 
 class BayesianAverageTest extends TestCase
 {
-
     public function testBayesianAverage()
     {
         $item1_ratings = [];
