@@ -65,7 +65,7 @@ $bayes->getAverage($average, $countRatings)
 
 ### Example
 
-....
+More text here ...
 
 ```php
 $data = collect([
@@ -98,7 +98,7 @@ $average = array_sum($data[0]['ratings']) / count($data[0]['ratings']); // 3.5
 $bayes_avg = $bayes->getAverage($average, count($item['ratings'])); // 3.5802469135802 
 ```
 
-...
+More text here ...
 
 ```php
 $bayes = new BayesianAverage($allRatingsCount, $sum);
