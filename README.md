@@ -65,12 +65,6 @@ Create an instance of the `AssistedMindfulness\BayesianAverage\BayesianAverage` 
 //$allRatingsCount - the count of quantity of ratings, $sum - the sum of all ratings
 $bayes = new BayesianAverage($allRatingsCount, $sum);
 ```
-Then you need to set the confidence average.
-
-```php
-//$allRatingsCount - the count of quantity of ratings, $sum - the sum of all ratings
-$bayes = new BayesianAverage($allRatingsCount, $sum);
-```
 
 Then set the confidence mean using one of the following methods:
 - `setConfidenceNumber(int|float $confidenceNumber)`: will set the passed argument to a confidence number.
