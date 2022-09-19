@@ -119,6 +119,7 @@ $bayes->setConfidenceNumberForEvenOrOdd($data->count(), function ($position) use
 $data->each(function ($item) use ($bayes, $sum, $allRatingsCount) {
     $average = array_sum($item['ratings']) / count($item['ratings']);
     $bayes_avg = $bayes->getAverage($average, count($item['ratings']));
+    
     printf('Average = %s, Bayesian  average = %s', $average, $bayes_avg);
 });
 
