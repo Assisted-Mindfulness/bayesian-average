@@ -88,44 +88,48 @@ $bayes->getAverage($average, $countRatings)
 ### Example
 
 ```php
- $data = [
-            [
-                'name'          => "Item1",
-                "ratings"       => [5,4,3,4,3,2,4,3],
-                'ratings_count' => 8,
-            ],
-            [
-                'name'          => "Item2",
-                "ratings"       => [4,5,5,5,5,5,5,5,4],
-                'ratings_count' => 9,
-            ],
-            [
-                'name'          => "Item3",
-                "ratings"       => [5],
-                'ratings_count' => 1,
-            ],
-        ];
-$allRatingsCount = collect($data)->sum('ratings_count');
-$sum = collect($data)->map(fn ($item) => array_sum($item['ratings']))->sum();
+<?php
+
+
+$data = collect([
+    [
+        'name'          => "Item1",
+        "ratings"       => [5, 4, 3, 4, 3, 2, 4, 3],
+        'ratings_count' => 8,
+    ],
+    [
+        'name'          => "Item2",
+        "ratings"       => [4, 5, 5, 5, 5, 5, 5, 5, 4],
+        'ratings_count' => 9,
+    ],
+    [
+        'name'          => "Item3",
+        "ratings"       => [5],
+        'ratings_count' => 1,
+    ],
+]);
+
+$allRatingsCount = $data->sum('ratings_count');
+$sum = $data->map(fn($item) => array_sum($item['ratings']))->sum();
 
 $bayes = new BayesianAverage($allRatingsCount, $sum);
 
-         $bayes->setConfidenceNumberForEvenOrOdd(count($data), function ($position) use ($data) {
-                    $item = collect($data)->sortBy('ratings_count')->values()->get($position / 2);
-        
-                    return $item['ratings_count'];
-                }, function ($position) use ($data) {
-                    $item1 = collect($data)->sortBy('ratings_count')->values()->get(($position + 1) / 2);
-                    $item2 = collect($data)->sortBy('ratings_count')->values()->get(($position - 1) / 2);
-        
-                    return ($item1['ratings_count'] + $item2['ratings_count']) / 2;
-                });
+$bayes->setConfidenceNumberForEvenOrOdd($data->count(), function ($position) use ($data) {
+    $item = $data->sortBy('ratings_count')->values()->get($position / 2);
 
-         collect($data)->each(function ($item) use ($bayes, $sum, $allRatingsCount) {
-            $average = array_sum($item['ratings']) / count($item['ratings']);
-            $bayes_avg = round($bayes->getAverage($average, count($item['ratings']),2)
-            printf('Average = %s, Bayesian  average = %s',$average,$bayes_avg);
-        });
+    return $item['ratings_count'];
+}, function ($position) use ($data) {
+    $item1 = $data->sortBy('ratings_count')->values()->get(($position + 1) / 2);
+    $item2 = $data->sortBy('ratings_count')->values()->get(($position - 1) / 2);
+
+    return ($item1['ratings_count'] + $item2['ratings_count']) / 2;
+});
+
+$data->each(function ($item) use ($bayes, $sum, $allRatingsCount) {
+    $average = array_sum($item['ratings']) / count($item['ratings']);
+    $bayes_avg = round($bayes->getAverage($average, count($item['ratings']), 2));
+    printf('Average = %s, Bayesian  average = %s', $average, $bayes_avg);
+});
 
 
 
