@@ -62,7 +62,7 @@ $bayes->getAverage($itemLargeRatingAverage, $itemLargeRatingCount); // ~4.3
 
 The confidence number is set by one of the following methods:
 - `setConfidenceNumber(int|float $confidenceNumber)`: will set the passed argument to a confidence number.
-- `setConfidenceNumberForEvenOrOdd(int $count, callable $even, callable $odd):`: - In case of an even `$count` (number of elements), will set the result of executing `$even` as a confidence number; if `$count` is odd, the confidence mean will be set to the result of running `$odd`.
+- `setConfidenceNumberForEvenOrOdd(int $count, callable $even, callable $odd)`: In case of an even `$count` (number of elements), will set the result of executing `$even` as a confidence number; if `$count` is odd, the confidence mean will be set to the result of running `$odd`.
 
 
 ### Example
