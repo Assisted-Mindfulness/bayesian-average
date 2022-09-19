@@ -110,7 +110,7 @@ $data = collect([
 ]);
 
 $allRatingsCount = $data->sum('ratings_count');
-$sum = $data->map(fn($item) => array_sum($item['ratings']))->sum();
+$sum = $data->sum(fn($item) => array_sum($item['ratings']));
 
 $bayes = new BayesianAverage($allRatingsCount, $sum);
 
