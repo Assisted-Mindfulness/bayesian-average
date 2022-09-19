@@ -3,252 +3,226 @@
 namespace AssistedMindfulness\BayesianAverage\Tests;
 
 use AssistedMindfulness\BayesianAverage\BayesianAverage;
+use Illuminate\Support\Collection;
 use PHPUnit\Framework\TestCase;
 
 class BayesianAverageTest extends TestCase
 {
-    public function testBayesianAverage()
+    public function testBayesianAverage(): void
     {
-        $item1_ratings = [];
-        for ($i = 0; $i < 500; $i++) {
-            $item1_ratings[] = rand(4, 5);
-        }
-        $item1_ratings_avg = collect($item1_ratings)->avg();
-        $item1_ratings_count = count($item1_ratings);
+        // Item with a large number of ratings
+        $itemLargeRating = collect(range(0, 500))->transform(fn() => random_int(4, 5));
+        $itemLargeRatingAverage = $itemLargeRating->avg();
+        $itemLargeRatingCount = $itemLargeRating->count();
 
-        $item2_ratings = [5];
-        $item2_ratings_avg = 5;
-        $item2_ratings_count = 1;
+        // Item with a small number of ratings
+        $itemSmallRatingAverage = 5;
+        $itemSmallRatingCount = 1;
 
         $c = 100;
         $m = 3.5;
 
-        $bayes = new BayesianAverage(0, 0);
-        $bayes->setConfidenceNumber($c);
-        $bayes->setAverageRatingOfAllElements($m);
+        $bayes = new BayesianAverage();
+        $bayes
+            ->setConfidenceNumber($c)
+            ->setAverageRatingOfAllElements($m);
 
-        $this->assertTrue($bayes->getAverage($item1_ratings_avg, $item1_ratings_count) > $bayes->getAverage($item2_ratings_avg, $item2_ratings_count));
+        $this->assertLessThan(
+            $bayes->getAverage($itemLargeRatingAverage, $itemLargeRatingCount), // ~4.3
+            $bayes->getAverage($itemSmallRatingAverage, $itemSmallRatingCount)  // ~3.5
+        );
     }
 
-    public function testBayesianAverageComparisonWithManuallyCalculatedValues()
+    public function testBayesianAverageComparisonWithManuallyCalculatedValues(): void
     {
-        $data = [
-            [
-                'name'             => "Item A",
-                "avg_rating"       => 5,
-                'ratings_count'    => 10,
-            ],
-            [
-                'name'             => "Item B",
-                "avg_rating"       => 4.8,
-                'ratings_count'    => 100,
-            ],
-            [
-                'name'             => "Item C",
-                "avg_rating"       => 4.6,
-                'ratings_count'    => 1000,
-            ],
-        ];
-
-        $bayes = new BayesianAverage(0, 0);
-        $bayes->setConfidenceNumber(100);
-        $bayes->setAverageRatingOfAllElements(3.5);
+        $bayes = new BayesianAverage();
+        $bayes
+            ->setConfidenceNumber(100)
+            ->setAverageRatingOfAllElements(3.5);
 
         // compare the results calculated by the program and manually
-        $this->assertEquals(round($bayes->getAverage($data[0]['avg_rating'], $data[0]['ratings_count']), 3), 3.636);
-        $this->assertEquals($bayes->getAverage($data[1]['avg_rating'], $data[1]['ratings_count']), 4.15);
-        $this->assertEquals($bayes->getAverage($data[2]['avg_rating'], $data[2]['ratings_count']), 4.5);
+        $this->assertEquals(3.6363636363636362, $bayes->getAverage(5, 10));
+        $this->assertEquals(4.15, $bayes->getAverage(4.8, 100));
+        $this->assertEquals(4.5, $bayes->getAverage(4.6, 1000));
     }
 
-    public function testBayesianAverageForArr()
+    public function testBayesianAverageForArr(): void
     {
-        $data = [
+        $data = collect([
             [
-                'name'          => "Item1",
-                "ratings"       => [5,4,3,4,3,2,4,3],
+                'name'          => "Item A",
+                "ratings"       => [5, 4, 3, 4, 3, 2, 4, 3],
                 'ratings_count' => 8,
             ],
             [
-                'name'          => "Item2",
-                "ratings"       => [4,5,5,5,5,5,5,5,4],
+                'name'          => "Item B",
+                "ratings"       => [4, 5, 5, 5, 5, 5, 5, 5, 4],
                 'ratings_count' => 9,
             ],
             [
-                'name'          => "Item3",
+                'name'          => "Item C",
                 "ratings"       => [5],
                 'ratings_count' => 1,
             ],
-        ];
-        $allRatingsCount = collect($data)->sum('ratings_count');
-        $sum = collect($data)->map(fn ($item) => array_sum($item['ratings']))->sum();
+        ]);
+
+        $allRatingsCount = $data->sum('ratings_count');
+        $sum = $data->sum(fn($item) => array_sum($item['ratings']));
 
         $bayes = new BayesianAverage($allRatingsCount, $sum);
 
-        $this->assertEquals($bayes->getAverageRatingOfAllElements(), $sum / $allRatingsCount);
-
+        $this->assertEquals($sum / $allRatingsCount, $bayes->getAverageRatingOfAllElements());
 
         $this->setConfidenceNumber($bayes, $data);
+
         // in this example, the confidence number is 1
-        $this->assertEquals($bayes->getConfidenceNumber(), 1);
-        collect($data)->each(function ($item) use ($bayes, $sum, $allRatingsCount) {
-            $average = array_sum($item['ratings']) / count($item['ratings']);
-            $bayes_avg = ($average * count($item['ratings']) + 1 * ($sum / $allRatingsCount)) / (count($item['ratings']) + 1);
-            $this->assertEquals($bayes->getAverage($average, count($item['ratings'])), $bayes_avg);
-        });
+        $this->assertEquals(1, $bayes->getConfidenceNumber());
+
+        $this->checkAverage($data, $bayes, $sum, $allRatingsCount, 1);
     }
 
-    public function testBayesianAverageEvenSetAndEvenHalf()
+    public function testBayesianAverageEvenSetAndEvenHalf(): void
     {
-        $data = [
+        $data = collect([
             [
-                'name'          => "Item1",
-                "ratings"       => [5,4,3,4,3,2,4,3],
+                'name'          => "Item A",
+                "ratings"       => [5, 4, 3, 4, 3, 2, 4, 3],
                 'ratings_count' => 8,
             ],
             [
-                'name'          => "Item2",
-                "ratings"       => [4,5,5,5,5,5,5,5,4],
+                'name'          => "Item B",
+                "ratings"       => [4, 5, 5, 5, 5, 5, 5, 5, 4],
                 'ratings_count' => 9,
             ],
             [
-                'name'          => "Item3",
+                'name'          => "Item C",
                 "ratings"       => [5],
                 'ratings_count' => 1,
             ],
             [
-                'name'          => "Item3",
-                "ratings"       => [5,6],
+                'name'          => "Item D",
+                "ratings"       => [5, 6],
                 'ratings_count' => 2,
             ],
-        ];
-        $allRatingsCount = collect($data)->sum('ratings_count');
-        $sum = collect($data)->map(fn ($item) => array_sum($item['ratings']))->sum();
+        ]);
+
+        $allRatingsCount = $data->sum('ratings_count');
+        $sum = $data->sum(fn($item) => array_sum($item['ratings']));
 
         $bayes = new BayesianAverage($allRatingsCount, $sum);
 
-
         $this->setConfidenceNumber($bayes, $data);
-        //
+
         //in this example, the confidence number is 1.5
-        $this->assertEquals($bayes->getConfidenceNumber(), 1.5);
-        collect($data)->each(function ($item) use ($bayes, $sum, $allRatingsCount) {
-            $average = array_sum($item['ratings']) / count($item['ratings']);
-            $bayes_avg = ($average * count($item['ratings']) + 1.5 * ($sum / $allRatingsCount)) / (count($item['ratings']) + 1.5);
-            $this->assertEquals($bayes->getAverage($average, count($item['ratings'])), $bayes_avg);
-        });
+        $this->assertEquals(1.5, $bayes->getConfidenceNumber());
+
+        $this->checkAverage($data, $bayes, $sum, $allRatingsCount, 1.5);
     }
 
-    public function testBayesianAverageEvenSetAndOddHalf()
+    public function testBayesianAverageEvenSetAndOddHalf(): void
     {
-        $data = [
+        $data = collect([
             [
-                'name'          => "Item1",
-                "ratings"       => [5,4,3,4,3,2,4,3],
+                'name'          => "Item A",
+                "ratings"       => [5, 4, 3, 4, 3, 2, 4, 3],
                 'ratings_count' => 8,
             ],
             [
-                'name'          => "Item2",
-                "ratings"       => [4,5,5,5,5,5,5,5,4],
+                'name'          => "Item B",
+                "ratings"       => [4, 5, 5, 5, 5, 5, 5, 5, 4],
                 'ratings_count' => 9,
             ],
             [
-                'name'          => "Item2",
-                "ratings"       => [4,5,5,5,5,5,5,5,4],
+                'name'          => "Item C",
+                "ratings"       => [4, 5, 5, 5, 5, 5, 5, 5, 4],
                 'ratings_count' => 9,
             ],
             [
-                'name'          => "Item3",
+                'name'          => "Item D",
                 "ratings"       => [5],
                 'ratings_count' => 1,
             ],
             [
-                'name'          => "Item3",
-                "ratings"       => [5,3],
+                'name'          => "Item E",
+                "ratings"       => [5, 3],
                 'ratings_count' => 2,
             ],
             [
                 'name'          => "Item3",
-                "ratings"       => [5,5,5],
+                "ratings"       => [5, 5, 5],
                 'ratings_count' => 3,
             ],
-        ];
-        $allRatingsCount = collect($data)->sum('ratings_count');
-        $sum = collect($data)->map(fn ($item) => array_sum($item['ratings']))->sum();
+        ]);
+        $allRatingsCount = $data->sum('ratings_count');
+        $sum = $data->sum(fn($item) => array_sum($item['ratings']));
 
         $bayes = new BayesianAverage($allRatingsCount, $sum);
-
 
         $this->setConfidenceNumber($bayes, $data);
+
         // in this example, the confidence number is 2
-        $this->assertEquals($bayes->getConfidenceNumber(), 2);
-        collect($data)->each(function ($item) use ($bayes, $sum, $allRatingsCount) {
-            $average = array_sum($item['ratings']) / count($item['ratings']);
-            $bayes_avg = ($average * count($item['ratings']) + 2 * ($sum / $allRatingsCount)) / (count($item['ratings']) + 2);
-            $this->assertEquals($bayes->getAverage($average, count($item['ratings'])), $bayes_avg);
-        });
+        $this->assertEquals(2, $bayes->getConfidenceNumber());
+
+        $this->checkAverage($data, $bayes, $sum, $allRatingsCount, 2);
     }
 
-    public function testBayesianAverageOddSetAndEvenHalf()
+    public function testBayesianAverageOddSetAndEvenHalf(): void
     {
-        $data = [
+        $data = collect([
             [
-                'name'          => "Item2",
-                "ratings"       => [4,5,5,5,5,5,5,5,4],
+                'name'          => "Item A",
+                "ratings"       => [4, 5, 5, 5, 5, 5, 5, 5, 4],
                 'ratings_count' => 9,
             ],
             [
-                'name'          => "Item2",
-                "ratings"       => [4,5,5,5,5,5,5,5,4],
+                'name'          => "Item B",
+                "ratings"       => [4, 5, 5, 5, 5, 5, 5, 5, 4],
                 'ratings_count' => 9,
             ],
             [
-                'name'          => "Item3",
+                'name'          => "Item C",
                 "ratings"       => [5],
                 'ratings_count' => 1,
             ],
             [
-                'name'          => "Item3",
-                "ratings"       => [5,3],
+                'name'          => "Item D",
+                "ratings"       => [5, 3],
                 'ratings_count' => 2,
             ],
             [
-                'name'          => "Item3",
-                "ratings"       => [5,5,5],
+                'name'          => "Item E",
+                "ratings"       => [5, 5, 5],
                 'ratings_count' => 3,
             ],
-        ];
-        $allRatingsCount = collect($data)->sum('ratings_count');
-        $sum = collect($data)->map(fn ($item) => array_sum($item['ratings']))->sum();
+        ]);
+        $allRatingsCount = $data->sum('ratings_count');
+        $sum = $data->sum(fn($item) => array_sum($item['ratings']));
 
         $bayes = new BayesianAverage($allRatingsCount, $sum);
-
 
         $this->setConfidenceNumber($bayes, $data);
         // in this example, the confidence number is  1.5
-        $this->assertEquals($bayes->getConfidenceNumber(), 1.5);
-        collect($data)->each(function ($item) use ($bayes, $sum, $allRatingsCount) {
-            $average = array_sum($item['ratings']) / count($item['ratings']);
-            $bayes_avg = ($average * count($item['ratings']) + 1.5 * ($sum / $allRatingsCount)) / (count($item['ratings']) + 1.5);
-            $this->assertEquals($bayes->getAverage($average, count($item['ratings'])), $bayes_avg);
-        });
+        $this->assertEquals(1.5, $bayes->getConfidenceNumber());
+
+        $this->checkAverage($data, $bayes, $sum, $allRatingsCount, 1.5);
     }
 
-    public function testBayesianAverageOddSetAndOddHalf()
+    public function testBayesianAverageOddSetAndOddHalf(): void
     {
-        $data = [
+        $data = collect([
             [
                 'name'          => "Item1",
-                "ratings"       => [5,4,3,4,3,2,4,3],
+                "ratings"       => [5, 4, 3, 4, 3, 2, 4, 3],
                 'ratings_count' => 8,
             ],
             [
                 'name'          => "Item2",
-                "ratings"       => [4,5,5,5,5,5,5,5,4],
+                "ratings"       => [4, 5, 5, 5, 5, 5, 5, 5, 4],
                 'ratings_count' => 9,
             ],
             [
                 'name'          => "Item2",
-                "ratings"       => [4,5,5,5,5,5,5,5,4],
+                "ratings"       => [4, 5, 5, 5, 5, 5, 5, 5, 4],
                 'ratings_count' => 9,
             ],
             [
@@ -258,48 +232,45 @@ class BayesianAverageTest extends TestCase
             ],
             [
                 'name'          => "Item3",
-                "ratings"       => [5,3],
+                "ratings"       => [5, 3],
                 'ratings_count' => 2,
             ],
             [
                 'name'          => "Item3",
-                "ratings"       => [5,5,5],
+                "ratings"       => [5, 5, 5],
                 'ratings_count' => 3,
             ],
             [
                 'name'          => "Item2",
-                "ratings"       => [4,5,5,5,5,5,5,5,4],
+                "ratings"       => [4, 5, 5, 5, 5, 5, 5, 5, 4],
                 'ratings_count' => 9,
             ],
-        ];
-        $allRatingsCount = collect($data)->sum('ratings_count');
-        $sum = collect($data)->map(fn ($item) => array_sum($item['ratings']))->sum();
+        ]);
+
+        $allRatingsCount = $data->sum('ratings_count');
+        $sum = $data->sum(fn($item) => array_sum($item['ratings']));
 
         $bayes = new BayesianAverage($allRatingsCount, $sum);
 
-
         $this->setConfidenceNumber($bayes, $data);
+
         // in this example, the confidence number is  2
-        $this->assertEquals($bayes->getConfidenceNumber(), 2);
-        collect($data)->each(function ($item) use ($bayes, $sum, $allRatingsCount) {
-            $average = array_sum($item['ratings']) / count($item['ratings']);
-            $bayes_avg = ($average * count($item['ratings']) + 2 * ($sum / $allRatingsCount)) / (count($item['ratings']) + 2);
-            $this->assertEquals($bayes->getAverage($average, count($item['ratings'])), $bayes_avg);
-        });
+        $this->assertEquals(2, $bayes->getConfidenceNumber());
+        $this->checkAverage($data, $bayes, $sum, $allRatingsCount, 2);
     }
 
-    public function testWithZeroConfidenceNumber()
+    public function testWithZeroConfidenceNumber(): void
     {
-        $data = [
+        $data = collect([
 
             [
                 'name'          => "Item1",
-                "ratings"       => [5,4,3,4,3,2,4,3],
+                "ratings"       => [5, 4, 3, 4, 3, 2, 4, 3],
                 'ratings_count' => 8,
             ],
             [
                 'name'          => "Item2",
-                "ratings"       => [4,5,5,5,5,5,5,5,4],
+                "ratings"       => [4, 5, 5, 5, 5, 5, 5, 5, 4],
                 'ratings_count' => 9,
             ],
             [
@@ -322,9 +293,9 @@ class BayesianAverageTest extends TestCase
                 "ratings"       => [],
                 'ratings_count' => 0,
             ],
-        ];
-        $allRatingsCount = collect($data)->sum('ratings_count');
-        $sum = collect($data)->map(fn ($item) => array_sum($item['ratings']))->sum();
+        ]);
+        $allRatingsCount = $data->sum('ratings_count');
+        $sum = $data->sum(fn($item) => array_sum($item['ratings']));
 
         $bayes = new BayesianAverage($allRatingsCount, $sum);
 
@@ -333,15 +304,22 @@ class BayesianAverageTest extends TestCase
         $this->setConfidenceNumber($bayes, $data);
 
         // in this example, the confidence number is  0
-        $this->assertEquals($bayes->getConfidenceNumber(), 0);
+        $this->assertEquals(0, $bayes->getConfidenceNumber());
+
         //With a confidence number of zero, the Bayesian average must be the same as the average.
-        collect($data)->each(function ($item) use ($bayes, $sum, $allRatingsCount) {
-            $average = count($item['ratings'])?array_sum($item['ratings']) / count($item['ratings']):0;
+        $data->each(function ($item) use ($bayes, $sum, $allRatingsCount) {
+            $average = count($item['ratings']) ? array_sum($item['ratings']) / count($item['ratings']) : 0;
             $this->assertEquals($bayes->getAverage($average, count($item['ratings'])), $average);
         });
     }
 
-    public function setConfidenceNumber(BayesianAverage &$bayes, array $data)
+    /**
+     * @param \AssistedMindfulness\BayesianAverage\BayesianAverage $bayes
+     * @param \Countable|array                                     $data
+     *
+     * @return void
+     */
+    protected function setConfidenceNumber(BayesianAverage $bayes, \Countable|array $data): void
     {
         $bayes->setConfidenceNumberForEvenOrOdd(count($data), function ($position) use ($data) {
             $item = collect($data)->sortBy('ratings_count')->values()->get($position / 2);
@@ -352,6 +330,27 @@ class BayesianAverageTest extends TestCase
             $item2 = collect($data)->sortBy('ratings_count')->values()->get(($position - 1) / 2);
 
             return ($item1['ratings_count'] + $item2['ratings_count']) / 2;
+        });
+    }
+
+    /**
+     * @param \Illuminate\Support\Collection                       $data
+     * @param \AssistedMindfulness\BayesianAverage\BayesianAverage $bayes
+     * @param                                                      $sum
+     * @param                                                      $allRatingsCount
+     * @param                                                      $confidenceNumber
+     *
+     * @return void
+     */
+    protected function checkAverage(Collection $data, BayesianAverage $bayes, $sum, $allRatingsCount, $confidenceNumber): void
+    {
+        $data->each(function ($item) use ($bayes, $sum, $allRatingsCount, $confidenceNumber) {
+            $ratings = collect($item['ratings']);
+
+            $average = $ratings->sum() / $ratings->count();
+            $bayesAverage = ($average * $ratings->count() + $confidenceNumber * ($sum / $allRatingsCount)) / ($ratings->count() + $confidenceNumber);
+
+            $this->assertEquals($bayesAverage, $bayes->getAverage($average, $ratings->count()));
         });
     }
 }

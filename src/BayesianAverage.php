@@ -1,4 +1,5 @@
 <?php
+
 namespace AssistedMindfulness\BayesianAverage;
 
 class BayesianAverage
@@ -26,10 +27,8 @@ class BayesianAverage
     /**
      * @param int $count - The count of quantity of ratings
      * @param int $sum   - The sum of all ratings
-     *
-     * @return void
      */
-    public function __construct(int $count, int $sum)
+    public function __construct(int $count = 0, int $sum = 0)
     {
         $this->countRating = $count;
         $this->sumRating = $sum;
@@ -40,9 +39,9 @@ class BayesianAverage
     /**
      * The arithmetic average rating of all items (m)
      *
-     * @return float
+     * @return float|int
      */
-    public function averageRatingOfAllElements(): float
+    public function averageRatingOfAllElements(): float|int
     {
         try {
             return $this->sumRating / $this->countRating;
@@ -51,15 +50,22 @@ class BayesianAverage
         }
     }
 
-    public function setAverageRatingOfAllElements(int|float $averageRatingOfAllElements)
+    /**
+     * @param int|float $averageRatingOfAllElements
+     *
+     * @return $this
+     */
+    public function setAverageRatingOfAllElements(int|float $averageRatingOfAllElements):self
     {
         $this->averageRatingOfAllElements = $averageRatingOfAllElements;
+
+        return $this;
     }
 
     /**
      * @return float|int
      */
-    public function getAverageRatingOfAllElements()
+    public function getAverageRatingOfAllElements(): float|int
     {
         return $this->averageRatingOfAllElements;
     }
@@ -86,9 +92,16 @@ class BayesianAverage
         return $this;
     }
 
-    public function setConfidenceNumber(int|float $confidenceNumber)
+    /**
+     * @param int|float $confidenceNumber
+     *
+     * @return $this
+     */
+    public function setConfidenceNumber(int|float $confidenceNumber):self
     {
         $this->confidenceNumber = $confidenceNumber;
+
+        return $this;
     }
 
     /**
