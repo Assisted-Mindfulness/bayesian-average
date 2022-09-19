@@ -1,0 +1,36 @@
+{
+    "name": "assisted-mindfulness/bayesian-average",
+    "description": "A Bayesian average is a method of estimating the mean of a population using outside information, especially a pre-existing belief, which is factored into the calculation.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "SadElephant",
+            "email": "angelforevor@mail.ru",
+            "role": "Developer"
+        },
+        {
+            "name": "Alexandr Chernyaev",
+            "email": "bliz48rus@gmail.com",
+            "homepage": "https://tabuna.github.io",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0",
+        "illuminate/support": "^8.0|^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "AssistedMindfulness\\BayesianAverage\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "AssistedMindfulness\\BayesianAverage\\Tests\\": "tests/"
+        }
+    }
+}
