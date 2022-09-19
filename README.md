@@ -28,7 +28,7 @@ As already suggested, ignoring the quantity of ratings doesn’t help distinguis
 
 The following image shows three items ranked by different averages. The left side uses the arithmetic average for ranking. The right side uses the Bayesian average.
 
-![image](./images/items.png)
+![image](.github/images/items.png)
 
 
 Both sides display the arithmetic average in parenthesis just right of the stars. They also display the average used for ranking as `avg_star_rating` and `bayes_avg` respectively, under each item.
