@@ -11,7 +11,7 @@ class BayesianAverageTest extends TestCase
     public function testBayesianAverage(): void
     {
         // Item with a large number of ratings
-        $itemLargeRating = collect(range(0, 500))->transform(fn() => random_int(4, 5));
+        $itemLargeRating = collect(range(0, 500))->transform(fn () => random_int(4, 5));
         $itemLargeRatingAverage = $itemLargeRating->avg();
         $itemLargeRatingCount = $itemLargeRating->count();
 
@@ -67,7 +67,7 @@ class BayesianAverageTest extends TestCase
         ]);
 
         $allRatingsCount = $data->sum('ratings_count');
-        $sum = $data->sum(fn($item) => array_sum($item['ratings']));
+        $sum = $data->sum(fn ($item) => array_sum($item['ratings']));
 
         $bayes = new BayesianAverage($allRatingsCount, $sum);
 
@@ -107,7 +107,7 @@ class BayesianAverageTest extends TestCase
         ]);
 
         $allRatingsCount = $data->sum('ratings_count');
-        $sum = $data->sum(fn($item) => array_sum($item['ratings']));
+        $sum = $data->sum(fn ($item) => array_sum($item['ratings']));
 
         $bayes = new BayesianAverage($allRatingsCount, $sum);
 
@@ -154,7 +154,7 @@ class BayesianAverageTest extends TestCase
             ],
         ]);
         $allRatingsCount = $data->sum('ratings_count');
-        $sum = $data->sum(fn($item) => array_sum($item['ratings']));
+        $sum = $data->sum(fn ($item) => array_sum($item['ratings']));
 
         $bayes = new BayesianAverage($allRatingsCount, $sum);
 
@@ -196,7 +196,7 @@ class BayesianAverageTest extends TestCase
             ],
         ]);
         $allRatingsCount = $data->sum('ratings_count');
-        $sum = $data->sum(fn($item) => array_sum($item['ratings']));
+        $sum = $data->sum(fn ($item) => array_sum($item['ratings']));
 
         $bayes = new BayesianAverage($allRatingsCount, $sum);
 
@@ -248,7 +248,7 @@ class BayesianAverageTest extends TestCase
         ]);
 
         $allRatingsCount = $data->sum('ratings_count');
-        $sum = $data->sum(fn($item) => array_sum($item['ratings']));
+        $sum = $data->sum(fn ($item) => array_sum($item['ratings']));
 
         $bayes = new BayesianAverage($allRatingsCount, $sum);
 
@@ -295,7 +295,7 @@ class BayesianAverageTest extends TestCase
             ],
         ]);
         $allRatingsCount = $data->sum('ratings_count');
-        $sum = $data->sum(fn($item) => array_sum($item['ratings']));
+        $sum = $data->sum(fn ($item) => array_sum($item['ratings']));
 
         $bayes = new BayesianAverage($allRatingsCount, $sum);
 
