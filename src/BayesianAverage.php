@@ -5,16 +5,6 @@ namespace AssistedMindfulness\BayesianAverage;
 class BayesianAverage
 {
     /**
-     * @var int|float
-     */
-    protected $countRating;
-
-    /**
-     * @var int|float
-     */
-    protected $sumRating;
-
-    /**
      * @var float|int
      */
     protected float|int $confidenceNumber = 1;
@@ -25,14 +15,14 @@ class BayesianAverage
     protected float|int $averageRatingOfAllElements;
 
     /**
-     * @param int $count - The count of quantity of ratings
-     * @param int $sum   - The sum of all ratings
+     * @param int|float $count - The count of quantity of ratings
+     * @param int|float $sum   - The sum of all ratings
      */
-    public function __construct(int $count = 0, int $sum = 0)
+    public function __construct(
+        protected int|float $count = 0,
+        protected int|float $sum = 0
+    )
     {
-        $this->countRating = $count;
-        $this->sumRating = $sum;
-
         $this->averageRatingOfAllElements = $this->averageRatingOfAllElements();
     }
 
@@ -44,7 +34,7 @@ class BayesianAverage
     public function averageRatingOfAllElements(): float|int
     {
         try {
-            return $this->sumRating / $this->countRating;
+            return $this->sum / $this->count;
         } catch (\DivisionByZeroError $exception) {
             return 0;
         }
@@ -71,7 +61,7 @@ class BayesianAverage
     }
 
     /**
-     *  Confidence number
+     * Confidence number
      *
      * @param int      $count
      * @param callable $even
