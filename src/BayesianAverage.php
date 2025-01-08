@@ -21,8 +21,7 @@ class BayesianAverage
     public function __construct(
         protected int|float $count = 0,
         protected int|float $sum = 0
-    )
-    {
+    ) {
         $this->averageRatingOfAllElements = $this->averageRatingOfAllElements();
     }
 
